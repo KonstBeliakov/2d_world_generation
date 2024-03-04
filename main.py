@@ -2,6 +2,7 @@ import pygame
 from player import Player
 from chunk import Chunk
 
+
 if __name__ == '__main__':
     pygame.init()
     window_size = (300, 300)
@@ -10,8 +11,9 @@ if __name__ == '__main__':
     background_color = (100, 200, 255)
     screen.fill(background_color)
 
-    chunk = Chunk()
-    chunk.load()
+    chunks = {(i, j): Chunk() for i in range(2) for j in range(2)}
+    for chunk in chunks.values():
+        chunk.load()
     player = Player()
 
     while True:
@@ -22,8 +24,10 @@ if __name__ == '__main__':
             player.update(event)
 
         screen.fill(background_color)
-        chunk.update()
-        chunk.draw(screen, player.position)
+
+        for chunk_position, chunk in chunks.items():
+            chunk.update()
+            chunk.draw(screen, chunk_position, player.position)
 
         player.draw()
 
