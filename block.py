@@ -1,9 +1,9 @@
 import pygame
 from settings import *
 
-textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None]
+textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None, 'depth_stone.png', 'log.png', 'leaves.png']
 
-textures = [pygame.image.load(file) for file in textures_files if file]
+textures = [pygame.image.load(file) if file else None for file in textures_files]
 
 
 class Block():

@@ -6,7 +6,7 @@ import pygame
 class Player():
     def __init__(self):
         self.position = [0, 0]
-        self.max_speed = 5
+        self.max_speed = 10
         self.current_speed = (0, 0)
         self.timer = time.perf_counter()
 

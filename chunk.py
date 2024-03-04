@@ -6,6 +6,7 @@ from settings import *
 class Chunk():
     def __init__(self):
         self.loaded = False
+        self.generated = False
         self.blocks = None
 
     def draw(self, screen, chunk_position, player_position):
