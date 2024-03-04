@@ -1,5 +1,7 @@
 import time
+
 import pygame
+
 
 class Player():
     def __init__(self):
@@ -25,5 +27,5 @@ class Player():
                          self.position[1] + self.current_speed[1] * (self.timer - time.perf_counter()))
         self.timer = time.perf_counter()
 
-    def draw(self):
+    def draw(self, screen):
         pass

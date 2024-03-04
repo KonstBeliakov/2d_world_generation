@@ -1,7 +1,9 @@
 import pygame
+from settings import *
 
-textures_files = ['dirt.png', 'sand.png']
-textures = [pygame.image.load(file) for file in textures_files]
+textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None]
+
+textures = [pygame.image.load(file) for file in textures_files if file]
 
 
 class Block():
@@ -9,4 +11,5 @@ class Block():
         self.type = block_type
 
     def draw(self, screen, pos):
-        screen.blit(textures[self.type], pos)
+        if self.type != AIR:
+            screen.blit(textures[self.type], pos)

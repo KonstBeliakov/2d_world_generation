@@ -24,11 +24,11 @@ class Chunk():
     def load(self):
         if not self.loaded:
             self.generate()
-            self.loaded = True
+            #self.loaded = True
 
     def unload(self):
         self.blocks = None
         self.loaded = False
 
     def generate(self):
-        self.blocks = [[Block(randrange(2)) for i in range(CHUNK_SIZE)] for j in range(CHUNK_SIZE)]
+        self.blocks = [[Block(AIR) for i in range(CHUNK_SIZE)] for j in range(CHUNK_SIZE)]
