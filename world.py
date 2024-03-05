@@ -88,20 +88,17 @@ class World():
         chunk_pos = (x // CHUNK_SIZE, y // CHUNK_SIZE)
         if chunk_pos not in self.chunks:
             self.generate(chunk_pos, structures=False)
-            print(f'error: cant find block {x}, {y}')
-            print(self.chunks[chunk_pos].blocks[x % CHUNK_SIZE][y % CHUNK_SIZE].type)
         return self.chunks[chunk_pos].blocks[x % CHUNK_SIZE][y % CHUNK_SIZE].type
 
     def tree(self, position):
-        print(f'tree at {position}...', end='')
         tree_height = random.randint(4, 6)
         for j in range(position[1] - tree_height, position[1]):
             self.setblock((position[0], j), LOG)
 
         for i in range(position[0] - 2, position[0] + 3):
             for j in range(position[1] - tree_height - 2, position[1] - tree_height + 2):
-                self.setblock((i, j), LEAVES)
+                if self.getblock(i, j) != LOG:
+                    self.setblock((i, j), LEAVES)
 
         self.setblock((position[0] - 2, position[1] - tree_height - 2), AIR)
         self.setblock((position[0] + 2, position[1] - tree_height - 2), AIR)
-        print('done')
