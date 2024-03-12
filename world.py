@@ -88,10 +88,10 @@ class World():
                         block = GRASS
                     elif j2 < height[i] + random.randint(3, 5):
                         block = DIRT
-                    elif j2 < 16:
+                    elif j2 < DEPTH_STONE_LEVEL:
                         block = STONE
-                    elif j2 < 22:
-                        block = DEPTH_STONE if (randrange(100) < [10, 25, 40, 60, 75, 90][j2 - 16]) else STONE
+                    elif j2 < DEPTH_STONE_LEVEL + len(DEPTH_STONE_PROBABILITY):
+                        block = DEPTH_STONE if (randrange(100) < DEPTH_STONE_PROBABILITY[j2 - DEPTH_STONE_LEVEL]) else STONE
                     else:
                         block = DEPTH_STONE
                     self.chunks[chunk_position].blocks[i][j].type = block
@@ -108,12 +108,18 @@ class World():
                     j - 1].type == AIR:
                     if randrange(100) < 10:
                         self.tree(position)
+                    if randrange(100) < 30:
+                        self.setblock(position, GRASS_BLOCK)
                 if self.chunks[chunk_position].blocks[i][j].type in [STONE, DEPTH_STONE]:
                     if randrange(10000) < 5:
                         print('cave', position)
                         self.cave(position)
-                    if randrange(10000) < 30:
+                    if randrange(10000) < 4:
                         self.ore(position, randrange(10, 40), SAND)
+                    if randrange(10000) < 20:
+                        self.ore(position, randrange(7, 20), COAL_ORE, depth_block_verion=DEPTH_COAL_ORE)
+                    if randrange(10000) < 10:
+                        self.ore(position, randrange(5, 15), IRON_ORE, depth_block_verion=DEPTH_IRON_ORE)
         self.chunks[chunk_position].loaded = True
 
     def setblock(self, position, block_type):
@@ -188,7 +194,7 @@ class World():
                 if l2[i][j]:
                     self.setblock((position[0] + i - n // 2, position[1] + j - n // 2), AIR)
 
-    def ore(self, position: tuple, size: int, block_type):
+    def ore(self, position: tuple, size: int, block_type, depth_block_verion=None):
         pos = [0, 0]
 
         s = {(pos[0], pos[1] + 1), (pos[0], pos[1] - 1), (pos[0] + 1, pos[1]), (pos[0] - 1, pos[1])}
@@ -200,7 +206,10 @@ class World():
             s2.add(p)
 
             if self.getblock(position[0] + p[0], position[1] + p[1]) != AIR:
-                self.setblock((position[0] + p[0], position[1] + p[1]), block_type)
+                if depth_block_verion and position[1] > DEPTH_STONE_LEVEL:
+                    self.setblock((position[0] + p[0], position[1] + p[1]), depth_block_verion)
+                else:
+                    self.setblock((position[0] + p[0], position[1] + p[1]), block_type)
 
             for j in [(p[0], p[1] + 1), (p[0], p[1] - 1), (p[0] + 1, p[1]), (p[0] - 1, p[1])]:
                 if j not in s2:
