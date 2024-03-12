@@ -1,9 +1,6 @@
 import pygame
 from player import Player
-from chunk import Chunk
 from world import World
-from settings import *
-from utils import *
 
 if __name__ == '__main__':
     pygame.init()

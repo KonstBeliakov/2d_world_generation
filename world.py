@@ -92,15 +92,22 @@ class World():
                         block = STONE
                     elif j2 < DEPTH_STONE_LEVEL + len(DEPTH_STONE_PROBABILITY):
                         block = DEPTH_STONE if (randrange(100) < DEPTH_STONE_PROBABILITY[j2 - DEPTH_STONE_LEVEL]) else STONE
-                    else:
+                    elif j2 < REDDISH_STONE_LEVEL:
                         block = DEPTH_STONE
+                    elif j2 < REDDISH_STONE_LEVEL + len(REDDISH_STONE_PROBABILITY):
+                        block = REDDISH_STONE if randrange(100) < REDDISH_STONE_PROBABILITY[j2 - REDDISH_STONE_LEVEL] else DEPTH_STONE
+                    elif j2 < HELL_STONE_LEVEL:
+                        block = REDDISH_STONE
+                    elif j2 < HELL_STONE_LEVEL + len(HELL_STONE_PROBABILITY):
+                        block = HELL_STONE if randrange(100) < HELL_STONE_PROBABILITY[
+                            j2 - HELL_STONE_LEVEL] else REDDISH_STONE
+                    else:
+                        block = HELL_STONE
                     self.chunks[chunk_position].blocks[i][j].type = block
             self.chunks[chunk_position].generated = True
         self.chunks[chunk_position].unload(*chunk_position)
 
     def structures_generate(self, chunk_position):
-        position = (chunk_position[0] * CHUNK_SIZE, chunk_position[1] * CHUNK_SIZE)
-        self.setblock(position, NONE)
         for i in range(CHUNK_SIZE):
             for j in range(CHUNK_SIZE):
                 position = (chunk_position[0] * CHUNK_SIZE + i, chunk_position[1] * CHUNK_SIZE + j)
@@ -120,6 +127,10 @@ class World():
                         self.ore(position, randrange(7, 20), COAL_ORE, depth_block_verion=DEPTH_COAL_ORE)
                     if randrange(10000) < 10:
                         self.ore(position, randrange(5, 15), IRON_ORE, depth_block_verion=DEPTH_IRON_ORE)
+                j2 = j + CHUNK_SIZE * chunk_position[1]
+                if j2 > DEPTH_STONE_LEVEL and self.chunks[chunk_position].blocks[i][j - 1].type == AIR:
+                    if randrange(100) < 3:
+                        self.ore(position, randrange(5, 15), DENSE_DEPTH_STONE)
         self.chunks[chunk_position].loaded = True
 
     def setblock(self, position, block_type):
