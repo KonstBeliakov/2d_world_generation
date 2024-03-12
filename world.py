@@ -112,6 +112,8 @@ class World():
                     if randrange(10000) < 5:
                         print('cave', position)
                         self.cave(position)
+                    if randrange(10000) < 30:
+                        self.ore(position, randrange(10, 40), SAND)
         self.chunks[chunk_position].loaded = True
 
     def setblock(self, position, block_type):
@@ -185,3 +187,21 @@ class World():
             for j in range(n):
                 if l2[i][j]:
                     self.setblock((position[0] + i - n // 2, position[1] + j - n // 2), AIR)
+
+    def ore(self, position: tuple, size: int, block_type):
+        pos = [0, 0]
+
+        s = {(pos[0], pos[1] + 1), (pos[0], pos[1] - 1), (pos[0] + 1, pos[1]), (pos[0] - 1, pos[1])}
+        s2 = set()
+
+        for i in range(size):
+            p = random.choice(list(s))
+            s.remove(p)
+            s2.add(p)
+
+            if self.getblock(position[0] + p[0], position[1] + p[1]) != AIR:
+                self.setblock((position[0] + p[0], position[1] + p[1]), block_type)
+
+            for j in [(p[0], p[1] + 1), (p[0], p[1] - 1), (p[0] + 1, p[1]), (p[0] - 1, p[1])]:
+                if j not in s2:
+                    s.add(j)
