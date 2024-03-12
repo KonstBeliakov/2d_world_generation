@@ -16,6 +16,7 @@ if __name__ == '__main__':
     player = Player()
     world = World()
 
+    pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN, pygame.KEYUP])
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

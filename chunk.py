@@ -2,7 +2,7 @@ import pickle
 
 import pygame
 
-from block import Block
+from block import Block, textures
 from random import randrange
 from settings import *
 

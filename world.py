@@ -8,6 +8,7 @@ from utils import *
 from chunk import Chunk
 from perlin_noise import PerlinNoise
 from time import perf_counter
+import numba
 
 
 class v2:
@@ -28,8 +29,8 @@ class World():
 
     def draw(self, screen, player_position):
         self.temp += 1
-        if self.temp % 10 == 0:
-            print(10 / (perf_counter() - self.time))
+        if self.temp % 100 == 0:
+            print(100 / (perf_counter() - self.time))
             self.time = perf_counter()
 
         for i in range(int(player_position[0] // CHUNK_SIZE - GENERATION_DISTANSE),
