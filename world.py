@@ -24,19 +24,27 @@ class World():
         self.noiseGenerator = PerlinNoise()
 
     def draw(self, screen, player_position):
+        for i in range(int(player_position[0] // CHUNK_SIZE - GENERATION_DISTANSE),
+                       int(player_position[0] // CHUNK_SIZE + GENERATION_DISTANSE)):
+            for j in range(int(player_position[1] // CHUNK_SIZE - GENERATION_DISTANSE),
+                           int(player_position[1] // CHUNK_SIZE + GENERATION_DISTANSE)):
+                # loading
+                if (i, j) not in self.chunks:
+                    self.chunks[(i, j)] = Chunk()
+                    self.chunks[(i, j)].load(i, j)
+                # pre-generating
+                if not self.chunks[(i, j)].generated:
+                    self.generate((i, j))
+
+        # generating structures
+
         for i in range(int(player_position[0] // CHUNK_SIZE - LOAD_DISTANSE),
                        int(player_position[0] // CHUNK_SIZE + LOAD_DISTANSE)):
             for j in range(int(player_position[1] // CHUNK_SIZE - LOAD_DISTANSE),
                            int(player_position[1] // CHUNK_SIZE + LOAD_DISTANSE)):
-
-                # generating
-
                 if dist((i, j), (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= LOAD_DISTANSE:
-                    if (i, j) not in self.chunks:
-                        self.chunks[(i, j)] = Chunk()
-                    self.chunks[(i, j)].load(i, j)
                     if not self.chunks[(i, j)].loaded:
-                        self.generate((i, j), structures=True)
+                        self.structures_generate((i, j))
 
         # unloading
         t = []
@@ -52,18 +60,19 @@ class World():
 
         for chunk_position, chunk in self.chunks.items():
             if dist(chunk_position,
-                    (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= LOAD_DISTANSE:
+                    (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= DRAW_DISTANSE:
                 chunk.update()
                 if chunk.generated:
                     chunk.draw(screen, chunk_position, player_position)
                 else:
                     print('not generated:', chunk_position)
 
-    def generate(self, chunk_position, structures=False):
+    def generate(self, chunk_position):
         if chunk_position not in self.chunks:
             self.chunks[chunk_position] = Chunk()
         if not self.chunks[chunk_position].generated:
-            self.chunks[chunk_position].generate()
+            self.chunks[chunk_position].load(*chunk_position)
+        if not self.chunks[chunk_position].generated:
             random.seed(self.seed)
             height = [self.noiseGenerator(i * 0.05) // 0.1 for i in
                       range(chunk_position[0] * CHUNK_SIZE, (chunk_position[0] + 1) * CHUNK_SIZE)]
@@ -85,9 +94,6 @@ class World():
                         block = DEPTH_STONE
                     self.chunks[chunk_position].blocks[i][j].type = block
             self.chunks[chunk_position].generated = True
-        if structures:
-            self.structures_generate(chunk_position)
-            self.chunks[chunk_position].loaded = True
         self.chunks[chunk_position].unload(*chunk_position)
 
     def structures_generate(self, chunk_position):
@@ -112,13 +118,19 @@ class World():
 
     def setblock(self, position, block_type):
         chunk_pos = (position[0] // CHUNK_SIZE, position[1] // CHUNK_SIZE)
-        if chunk_pos not in self.chunks or not self.chunks[chunk_pos].generated:
+        if chunk_pos not in self.chunks:
+            self.chunks[chunk_pos] = Chunk()
+            self.chunks[chunk_pos].load(*chunk_pos)
+        if not self.chunks[chunk_pos].generated:
             self.generate(chunk_pos, structures=False)
         self.chunks[chunk_pos].blocks[position[0] % CHUNK_SIZE][position[1] % CHUNK_SIZE].type = block_type
 
     def getblock(self, x, y):
         chunk_pos = (x // CHUNK_SIZE, y // CHUNK_SIZE)
-        if chunk_pos not in self.chunks or not self.chunks[chunk_pos].generated:
+        if chunk_pos not in self.chunks:
+            self.chunks[chunk_pos] = Chunk()
+            self.chunks[chunk_pos].load(*chunk_pos)
+        if not self.chunks[chunk_pos].generated:
             self.generate(chunk_pos, structures=False)
         return self.chunks[chunk_pos].blocks[x % CHUNK_SIZE][y % CHUNK_SIZE].type
 
