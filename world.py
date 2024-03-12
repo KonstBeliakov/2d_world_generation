@@ -7,6 +7,7 @@ from settings import *
 from utils import *
 from chunk import Chunk
 from perlin_noise import PerlinNoise
+from time import perf_counter
 
 
 class v2:
@@ -22,8 +23,15 @@ class World():
             chunk.load(*chunk_pos)
         self.seed = 0
         self.noiseGenerator = PerlinNoise()
+        self.time = perf_counter()
+        self.temp = 0
 
     def draw(self, screen, player_position):
+        self.temp += 1
+        if self.temp % 10 == 0:
+            print(10 / (perf_counter() - self.time))
+            self.time = perf_counter()
+
         for i in range(int(player_position[0] // CHUNK_SIZE - GENERATION_DISTANSE),
                        int(player_position[0] // CHUNK_SIZE + GENERATION_DISTANSE)):
             for j in range(int(player_position[1] // CHUNK_SIZE - GENERATION_DISTANSE),
@@ -59,19 +67,12 @@ class World():
         # drawing
 
         for chunk_position, chunk in self.chunks.items():
-            if dist(chunk_position,
-                    (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= DRAW_DISTANSE:
+            if abs(chunk_position[0] - player_position[0] // CHUNK_SIZE) <= DRAW_DISTANSE_X and \
+                    abs(chunk_position[1] - player_position[1] // CHUNK_SIZE) <= DRAW_DISTANSE_Y:
                 chunk.update()
-                if chunk.generated:
-                    chunk.draw(screen, chunk_position, player_position)
-                else:
-                    print('not generated:', chunk_position)
+                chunk.draw(screen, chunk_position, player_position)
 
     def generate(self, chunk_position):
-        if chunk_position not in self.chunks:
-            self.chunks[chunk_position] = Chunk()
-        if not self.chunks[chunk_position].generated:
-            self.chunks[chunk_position].load(*chunk_position)
         if not self.chunks[chunk_position].generated:
             random.seed(self.seed)
             height = [self.noiseGenerator(i * 0.05) // 0.1 for i in
@@ -97,8 +98,6 @@ class World():
         self.chunks[chunk_position].unload(*chunk_position)
 
     def structures_generate(self, chunk_position):
-        if not self.chunks[chunk_position].generated:
-            self.generate(chunk_position)
         position = (chunk_position[0] * CHUNK_SIZE, chunk_position[1] * CHUNK_SIZE)
         self.setblock(position, NONE)
         for i in range(CHUNK_SIZE):
@@ -109,12 +108,10 @@ class World():
                     if randrange(100) < 10:
                         self.tree(position)
                 if self.chunks[chunk_position].blocks[i][j].type in [STONE, DEPTH_STONE]:
-                    if randrange(10000) < 7:
+                    if randrange(10000) < 5:
                         print('cave', position)
                         self.cave(position)
-        self.chunks[chunk_position].genereted = True
         self.chunks[chunk_position].loaded = True
-        self.chunks[chunk_position].unload(*chunk_position)
 
     def setblock(self, position, block_type):
         chunk_pos = (position[0] // CHUNK_SIZE, position[1] // CHUNK_SIZE)
@@ -122,7 +119,7 @@ class World():
             self.chunks[chunk_pos] = Chunk()
             self.chunks[chunk_pos].load(*chunk_pos)
         if not self.chunks[chunk_pos].generated:
-            self.generate(chunk_pos, structures=False)
+            self.generate(chunk_pos)
         self.chunks[chunk_pos].blocks[position[0] % CHUNK_SIZE][position[1] % CHUNK_SIZE].type = block_type
 
     def getblock(self, x, y):
@@ -131,7 +128,7 @@ class World():
             self.chunks[chunk_pos] = Chunk()
             self.chunks[chunk_pos].load(*chunk_pos)
         if not self.chunks[chunk_pos].generated:
-            self.generate(chunk_pos, structures=False)
+            self.generate(chunk_pos)
         return self.chunks[chunk_pos].blocks[x % CHUNK_SIZE][y % CHUNK_SIZE].type
 
     def tree(self, position):
@@ -157,7 +154,7 @@ class World():
 
         # generation
 
-        for i in range(iteration):
+        for _ in range(iteration):
             for x in range(max(0, int(p_now.x) - d), min(n - 1, int(p_now.x) + d + 1)):
                 for y in range(max(0, int(p_now.y) - d), min(n - 1, int(p_now.y) + d + 1)):
                     l[x][y] = True
