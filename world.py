@@ -11,8 +11,8 @@ from perlin_noise import PerlinNoise
 class World():
     def __init__(self):
         self.chunks = {(i, j): Chunk() for i in range(2) for j in range(2)}
-        for chunk in self.chunks.values():
-            chunk.load()
+        for chunk_pos, chunk in self.chunks.items():
+            chunk.load(*chunk_pos)
         self.seed = 0
         self.noiseGenerator = PerlinNoise()
 
@@ -25,7 +25,7 @@ class World():
                 if dist((i, j), (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= LOAD_DISTANSE:
                     if (i, j) not in self.chunks:
                         self.chunks[(i, j)] = Chunk()
-                    self.chunks[(i, j)].load()
+                    self.chunks[(i, j)].load(i, j)
                     if not self.chunks[(i, j)].loaded:
                         self.generate((i, j), structures=True)
         t = []
@@ -38,9 +38,8 @@ class World():
             chunk.draw(screen, chunk_position, player_position)
 
         for i in t:
+            self.chunks[i].unload(*i)
             del self.chunks[i]
-
-        #print(f'chunks loaded: {len(self.chunks)}')
 
     def generate(self, chunk_position, structures=False):
         if chunk_position not in self.chunks:
