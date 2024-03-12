@@ -1,7 +1,7 @@
 import pygame
 from settings import *
 
-textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None, 'depth_stone.png', 'log.png', 'leaves.png']
+textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None, 'depth_stone.png', 'log.png', 'leaves.png', 'none.png']
 
 textures = [pygame.image.load(f'textures/{file}') if file else None for file in textures_files]
 

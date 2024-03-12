@@ -7,7 +7,7 @@ from utils import *
 
 if __name__ == '__main__':
     pygame.init()
-    window_size = (800, 800)
+    window_size = (1200, 800)
     pygame.display.set_caption("Main window")
     screen = pygame.display.set_mode(window_size)
     background_color = (100, 200, 255)

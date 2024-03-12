@@ -14,7 +14,7 @@ class Chunk():
         self.blocks = None
 
     def draw(self, screen, chunk_position, player_position):
-        if self.loaded:
+        if self.loaded and self.generated:
             for i in range(len(self.blocks)):
                 for j in range(len(self.blocks[i])):
                     self.blocks[i][j].draw(screen,
@@ -30,21 +30,20 @@ class Chunk():
         if not self.loaded:
             try:
                 with open(f'world/{x} {y}', 'rb') as file:
-                    self.blocks = pickle.load(file)
+                    self.generated, self.loaded, self.blocks = pickle.load(file)
             except:
                 self.generate()
-            else:
-                self.loaded = True
 
     def unload(self, x, y):
-        with open(f'world/{x} {y}', 'wb') as file:
-            pickle.dump(self.blocks, file)
+        if self.generated:
+            with open(f'world/{x} {y}', 'wb') as file:
+                pickle.dump([self.generated, self.loaded, self.blocks], file)
 
-        self.blocks = None
-        self.loaded = False
+        #self.blocks = None
+        #self.loaded = False
 
     def generate(self):
-        self.blocks = [[Block(AIR) for i in range(CHUNK_SIZE)] for j in range(CHUNK_SIZE)]
+        self.blocks = [[Block(NONE) for i in range(CHUNK_SIZE)] for j in range(CHUNK_SIZE)]
 
 
 if __name__ == '__main__':
