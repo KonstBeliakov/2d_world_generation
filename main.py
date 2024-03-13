@@ -1,8 +1,13 @@
 import pygame
 from player import Player
 from world import World
+from settings import *
+import os
+
 
 if __name__ == '__main__':
+    os.mkdir(WORLD_FOLDER_NAME)
+
     pygame.init()
     window_size = (1200, 800)
     pygame.display.set_caption("Main window")

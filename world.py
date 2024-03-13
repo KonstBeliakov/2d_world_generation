@@ -26,6 +26,7 @@ class World():
         self.noiseGenerator = PerlinNoise()
         self.time = perf_counter()
         self.temp = 0
+        self.prev_player_position = None
 
     def draw(self, screen, player_position):
         self.temp += 1
@@ -33,45 +34,65 @@ class World():
             print(100 / (perf_counter() - self.time))
             self.time = perf_counter()
 
-        for i in range(int(player_position[0] // CHUNK_SIZE - GENERATION_DISTANSE),
-                       int(player_position[0] // CHUNK_SIZE + GENERATION_DISTANSE)):
-            for j in range(int(player_position[1] // CHUNK_SIZE - GENERATION_DISTANSE),
-                           int(player_position[1] // CHUNK_SIZE + GENERATION_DISTANSE)):
-                # loading
-                if (i, j) not in self.chunks:
-                    self.chunks[(i, j)] = Chunk()
-                    self.chunks[(i, j)].load(i, j)
-                # pre-generating
-                if not self.chunks[(i, j)].generated:
-                    self.generate((i, j))
+        moved = self.prev_player_position is None or \
+                (player_position[0] // CHUNK_SIZE != self.prev_player_position[0] // CHUNK_SIZE or
+                 player_position[1] // CHUNK_SIZE != self.prev_player_position[1] // CHUNK_SIZE)
+        self.prev_player_position = player_position
+
+        t = perf_counter()
+        if moved:
+            for i in range(int(player_position[0] // CHUNK_SIZE - GENERATION_DISTANSE),
+                           int(player_position[0] // CHUNK_SIZE + GENERATION_DISTANSE)):
+                for j in range(int(player_position[1] // CHUNK_SIZE - GENERATION_DISTANSE),
+                               int(player_position[1] // CHUNK_SIZE + GENERATION_DISTANSE)):
+                    # loading
+                    if (i, j) not in self.chunks:
+                        self.chunks[(i, j)] = Chunk()
+                        self.chunks[(i, j)].load(i, j)
+                    # pre-generating
+                    if not self.chunks[(i, j)].generated:
+                        self.generate((i, j))
+        print('loading:', perf_counter() - t, end=' ')
 
         # generating structures
+        t = perf_counter()
+        if moved:
+            for i in range(int(player_position[0] // CHUNK_SIZE - LOAD_DISTANSE),
+                           int(player_position[0] // CHUNK_SIZE + LOAD_DISTANSE)):
+                for j in range(int(player_position[1] // CHUNK_SIZE - LOAD_DISTANSE),
+                               int(player_position[1] // CHUNK_SIZE + LOAD_DISTANSE)):
+                    if dist((i, j),
+                            (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= LOAD_DISTANSE:
+                        if not self.chunks[(i, j)].loaded:
+                            self.structures_generate((i, j))
 
-        for i in range(int(player_position[0] // CHUNK_SIZE - LOAD_DISTANSE),
-                       int(player_position[0] // CHUNK_SIZE + LOAD_DISTANSE)):
-            for j in range(int(player_position[1] // CHUNK_SIZE - LOAD_DISTANSE),
-                           int(player_position[1] // CHUNK_SIZE + LOAD_DISTANSE)):
-                if dist((i, j), (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) <= LOAD_DISTANSE:
-                    if not self.chunks[(i, j)].loaded:
-                        self.structures_generate((i, j))
+        print('generating:', perf_counter() - t, end=' ')
 
         # unloading
-        t = []
-        for chunk_position, chunk in self.chunks.items():
-            if dist(chunk_position,
-                    (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) > GENERATION_DISTANSE:
-                t.append(chunk_position)
-        for i in t:
-            self.chunks[i].unload(*i)
-            del self.chunks[i]
+        t2 = perf_counter()
+        if moved:
+            t = []
+            for chunk_position, chunk in self.chunks.items():
+                if dist(chunk_position,
+                        (player_position[0] // CHUNK_SIZE, player_position[1] // CHUNK_SIZE)) > GENERATION_DISTANSE:
+                    t.append(chunk_position)
+            for i in t:
+                self.chunks[i].unload(*i)
+                del self.chunks[i]
+
+        print('unloading:', perf_counter() - t2, end=' ')
 
         # drawing
+
+        t2 = perf_counter()
 
         for chunk_position, chunk in self.chunks.items():
             if abs(chunk_position[0] - player_position[0] // CHUNK_SIZE) <= DRAW_DISTANSE_X and \
                     abs(chunk_position[1] - player_position[1] // CHUNK_SIZE) <= DRAW_DISTANSE_Y:
                 chunk.update()
                 chunk.draw(screen, chunk_position, player_position)
+
+        print('drawing:', perf_counter() - t2)
 
     def generate(self, chunk_position):
         if not self.chunks[chunk_position].generated:
@@ -91,11 +112,13 @@ class World():
                     elif j2 < DEPTH_STONE_LEVEL:
                         block = STONE
                     elif j2 < DEPTH_STONE_LEVEL + len(DEPTH_STONE_PROBABILITY):
-                        block = DEPTH_STONE if (randrange(100) < DEPTH_STONE_PROBABILITY[j2 - DEPTH_STONE_LEVEL]) else STONE
+                        block = DEPTH_STONE if (
+                                randrange(100) < DEPTH_STONE_PROBABILITY[j2 - DEPTH_STONE_LEVEL]) else STONE
                     elif j2 < REDDISH_STONE_LEVEL:
                         block = DEPTH_STONE
                     elif j2 < REDDISH_STONE_LEVEL + len(REDDISH_STONE_PROBABILITY):
-                        block = REDDISH_STONE if randrange(100) < REDDISH_STONE_PROBABILITY[j2 - REDDISH_STONE_LEVEL] else DEPTH_STONE
+                        block = REDDISH_STONE if randrange(100) < REDDISH_STONE_PROBABILITY[
+                            j2 - REDDISH_STONE_LEVEL] else DEPTH_STONE
                     elif j2 < HELL_STONE_LEVEL:
                         block = REDDISH_STONE
                     elif j2 < HELL_STONE_LEVEL + len(HELL_STONE_PROBABILITY):

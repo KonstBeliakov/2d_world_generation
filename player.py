@@ -20,6 +20,7 @@ class Player():
                 self.current_speed = (self.max_speed, 0)
             if event.key == pygame.K_d:
                 self.current_speed = (-self.max_speed, 0)
+            self.timer = time.perf_counter()
         elif event.type == pygame.KEYUP:
             self.current_speed = (0, 0)
 

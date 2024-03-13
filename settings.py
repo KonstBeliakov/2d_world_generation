@@ -1,3 +1,7 @@
+import numpy as np
+
+WORLD_FOLDER_NAME = 'world'
+
 #drawing settings
 
 BLOCK_SIZE = 16
@@ -6,7 +10,8 @@ LOAD_DISTANSE = 6
 GENERATION_DISTANSE = 8
 DRAW_DISTANSE_X = 2
 DRAW_DISTANSE_Y = 3
-SCREEN_SENTER = (600, 400)
+SCREEN_SIZE = (1200, 800)
+SCREEN_SENTER = (SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
 
 # world settings
 DEPTH_STONE_LEVEL = 48
