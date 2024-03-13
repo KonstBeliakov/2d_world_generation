@@ -2,13 +2,11 @@ import copy
 import random
 from random import randrange
 
-import pygame
 from settings import *
 from utils import *
 from chunk import Chunk
 from perlin_noise import PerlinNoise
 from time import perf_counter
-import numba
 
 
 class v2:
@@ -82,8 +80,8 @@ class World():
                 chunk.update()
                 chunk.draw(screen, chunk_position, player_position)
 
-        print('fps:', 1 / (perf_counter() - self.time))
-        self.time = perf_counter()
+        #print('fps:', 1 / (perf_counter() - self.time))
+        #self.time = perf_counter()
 
     def generate(self, chunk_position):
         if not self.chunks[chunk_position].generated:
@@ -132,15 +130,20 @@ class World():
                     if randrange(100) < 30:
                         self.setblock(position, GRASS_BLOCK)
                 if self.chunks[chunk_position].blocks[i][j].type in [STONE, DEPTH_STONE]:
-                    if randrange(10000) < 5:
+                    if randrange(10000) < 4:
                         print('cave', position)
                         self.cave(position)
-                    if randrange(10000) < 4:
+                    if randrange(10000) < 5:
                         self.ore(position, randrange(10, 40), SAND)
                     if randrange(10000) < 20:
                         self.ore(position, randrange(7, 20), COAL_ORE, depth_block_verion=DEPTH_COAL_ORE)
                     if randrange(10000) < 10:
                         self.ore(position, randrange(5, 15), IRON_ORE, depth_block_verion=DEPTH_IRON_ORE)
+                if self.chunks[chunk_position].blocks[i][j].type == HELL_STONE:
+                    if randrange(10000) < 15:
+                        self.ore(position, randrange(15, 30), MAGMA)
+                    if randrange(10000) < 8:
+                        self.hell_star(position)
                 j2 = j + CHUNK_SIZE * chunk_position[1]
                 if j2 > DEPTH_STONE_LEVEL and self.chunks[chunk_position].blocks[i][j - 1].type == AIR:
                     if randrange(100) < 3:
@@ -239,3 +242,37 @@ class World():
             for j in [(p[0], p[1] + 1), (p[0], p[1] - 1), (p[0] + 1, p[1]), (p[0] - 1, p[1])]:
                 if j not in s2:
                     s.add(j)
+
+    def hell_star(self, position):
+        l = [[0] * 20 for i in range(20)]
+
+        for x in range(-8, 9):
+            for y in range(-8, 9):
+                l[10 + x][10 + y] = int(randrange(1, 10) * (9 - dist((0, 0), (x, y))))
+
+        for x in range(20):
+            for y in range(20):
+                pos = (position[0] + x, position[1] + y)
+                if l[x][y] > 50:
+                    self.setblock(pos, RICH_HELL_STAR_ORE)
+                elif l[x][y] > 20:
+                    self.setblock(pos, HELL_STAR_ORE)
+                elif l[x][y] > 10:
+                    self.setblock(pos, POOR_HELL_STAR_ORE)
+            print()
+
+        '''for x in range(-2, 3):
+            for y in range(-2, 3):
+                if randrange(100) < 30:
+                    self.setblock((position[0] + x, position[1] + y), RICH_HELL_STAR_ORE)
+
+                    self.setblock((position[0] + x + 1, position[1] + y), RICH_HELL_STAR_ORE)
+                    self.setblock((position[0] + x - 1, position[1] + y), RICH_HELL_STAR_ORE)
+                    self.setblock((position[0] + x, position[1] + y + 1), RICH_HELL_STAR_ORE)
+                    self.setblock((position[0] + x, position[1] + y - 1), RICH_HELL_STAR_ORE)
+
+        for x in range(-6, 7):
+            for y in range(-6, 7):
+                d =  dist((0, 0), (x, y))
+                if randrange(6) < (7 - d):
+                    self.setblock((position[0] + x, position[1] + y), HELL_STAR_ORE)'''
