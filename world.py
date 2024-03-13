@@ -28,19 +28,14 @@ class World():
         self.temp = 0
         self.prev_player_position = None
 
-    def draw(self, screen, player_position):
-        self.temp += 1
-        if self.temp % 100 == 0:
-            print(100 / (perf_counter() - self.time))
-            self.time = perf_counter()
-
+    def update(self, player_position):
         moved = self.prev_player_position is None or \
                 (player_position[0] // CHUNK_SIZE != self.prev_player_position[0] // CHUNK_SIZE or
                  player_position[1] // CHUNK_SIZE != self.prev_player_position[1] // CHUNK_SIZE)
         self.prev_player_position = player_position
 
-        t = perf_counter()
         if moved:
+            t = perf_counter()
             for i in range(int(player_position[0] // CHUNK_SIZE - GENERATION_DISTANSE),
                            int(player_position[0] // CHUNK_SIZE + GENERATION_DISTANSE)):
                 for j in range(int(player_position[1] // CHUNK_SIZE - GENERATION_DISTANSE),
@@ -52,11 +47,10 @@ class World():
                     # pre-generating
                     if not self.chunks[(i, j)].generated:
                         self.generate((i, j))
-        print('loading:', perf_counter() - t, end=' ')
+            print('loading:', perf_counter() - t, end=' ')
 
-        # generating structures
-        t = perf_counter()
-        if moved:
+            # generating structures
+            t = perf_counter()
             for i in range(int(player_position[0] // CHUNK_SIZE - LOAD_DISTANSE),
                            int(player_position[0] // CHUNK_SIZE + LOAD_DISTANSE)):
                 for j in range(int(player_position[1] // CHUNK_SIZE - LOAD_DISTANSE),
@@ -66,11 +60,10 @@ class World():
                         if not self.chunks[(i, j)].loaded:
                             self.structures_generate((i, j))
 
-        print('generating:', perf_counter() - t, end=' ')
+            print('generating:', perf_counter() - t, end=' ')
 
-        # unloading
-        t2 = perf_counter()
-        if moved:
+            # unloading
+            t2 = perf_counter()
             t = []
             for chunk_position, chunk in self.chunks.items():
                 if dist(chunk_position,
@@ -80,19 +73,17 @@ class World():
                 self.chunks[i].unload(*i)
                 del self.chunks[i]
 
-        print('unloading:', perf_counter() - t2, end=' ')
+            print('unloading:', perf_counter() - t2, end=' ')
 
-        # drawing
-
-        t2 = perf_counter()
-
+    def draw(self, screen, player_position):
         for chunk_position, chunk in self.chunks.items():
             if abs(chunk_position[0] - player_position[0] // CHUNK_SIZE) <= DRAW_DISTANSE_X and \
                     abs(chunk_position[1] - player_position[1] // CHUNK_SIZE) <= DRAW_DISTANSE_Y:
                 chunk.update()
                 chunk.draw(screen, chunk_position, player_position)
 
-        print('drawing:', perf_counter() - t2)
+        print('fps:', 1 / (perf_counter() - self.time))
+        self.time = perf_counter()
 
     def generate(self, chunk_position):
         if not self.chunks[chunk_position].generated:

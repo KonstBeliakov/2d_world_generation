@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
         screen.fill(background_color)
 
+        world.update(player.position)
         world.draw(screen, player.position)
 
         player.draw(screen)
