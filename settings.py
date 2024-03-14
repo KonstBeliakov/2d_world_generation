@@ -1,15 +1,26 @@
-import numpy as np
+import pygame
+from random import randrange
 
-WORLD_FOLDER_NAME = 'world'
+WORLD_SEED = randrange(10 ** 9)
+WORLD_FOLDER_NAME = f'world{WORLD_SEED}'
 
-#drawing settings
+# textures
+
+textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None, 'depth_stone.png', 'log.png', 'leaves.png',
+                  'none.png', 'iron_ore.png', 'coal_ore.png', 'depth_coal_ore.png', 'depth_iron_ore.png',
+                  'grass_block.png', 'dense_depth_stone.png', 'reddish_stone.png', 'hell_stone.png',
+                  'magma.png', 'hell_star_ore.png', 'rich_hell_star_ore.png', 'poor_hell_star_ore.png']
+
+textures = [pygame.image.load(f'textures/{file}') if file else None for file in textures_files]
+
+# drawing settings
 
 BLOCK_SIZE = 16
 CHUNK_SIZE = 16
 LOAD_DISTANSE = 6
-GENERATION_DISTANSE = 8
-DRAW_DISTANSE_X = 2
-DRAW_DISTANSE_Y = 3
+GENERATION_DISTANSE = 9
+DRAW_DISTANSE_X = 3
+DRAW_DISTANSE_Y = 2
 SCREEN_SIZE = (1200, 800)
 SCREEN_SENTER = (SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
 

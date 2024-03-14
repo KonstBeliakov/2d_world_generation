@@ -1,13 +1,4 @@
-import pygame
-import numpy as np
 from settings import *
-
-textures_files = ['dirt.png', 'sand.png', 'grass.png', 'stone.png', None, 'depth_stone.png', 'log.png', 'leaves.png',
-                  'none.png', 'iron_ore.png', 'coal_ore.png', 'depth_coal_ore.png', 'depth_iron_ore.png',
-                  'grass_block.png', 'dense_depth_stone.png', 'reddish_stone.png', 'hell_stone.png',
-                  'magma.png', 'hell_star_ore.png', 'rich_hell_star_ore.png', 'poor_hell_star_ore.png']
-
-textures = [pygame.image.load(f'textures/{file}') if file else None for file in textures_files]
 
 
 class Block():
