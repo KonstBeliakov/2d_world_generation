@@ -1,4 +1,3 @@
-import copy
 import random
 
 from settings import *
@@ -7,12 +6,7 @@ from utils import *
 from chunk import Chunk
 from perlin_noise import PerlinNoise
 from time import perf_counter
-
-
-class v2:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+import structures
 
 
 class World():
@@ -130,28 +124,29 @@ class World():
                 if self.chunks[chunk_position].blocks[i][j].type == GRASS and self.chunks[chunk_position].blocks[i][
                     j - 1].type == AIR:
                     if randrange(100) < 10:
-                        self.tree(position)
+                        structures.tree(self, position)
                     if randrange(100) < 30:
                         self.setblock(position, GRASS_BLOCK)
                 if self.chunks[chunk_position].blocks[i][j].type in [STONE, DEPTH_STONE]:
                     if randrange(10000) < 4:
                         print('cave', position)
-                        self.cave(position)
+                        structures.cave(self, position)
                     if randrange(10000) < 5:
-                        self.ore(position, randrange(10, 40), SAND)
+                        structures.ore(self, position, randrange(10, 40), SAND)
                     if randrange(10000) < 20:
-                        self.ore(position, randrange(7, 20), COAL_ORE, depth_block_verion=DEPTH_COAL_ORE)
+                        structures.ore(self, position, randrange(7, 20), COAL_ORE, depth_block_verion=DEPTH_COAL_ORE)
                     if randrange(10000) < 10:
-                        self.ore(position, randrange(5, 15), IRON_ORE, depth_block_verion=DEPTH_IRON_ORE)
+                        structures.ore(self, position, randrange(5, 15), IRON_ORE, depth_block_verion=DEPTH_IRON_ORE)
                 if self.chunks[chunk_position].blocks[i][j].type == HELL_STONE:
                     if randrange(10000) < 15:
-                        self.ore(position, randrange(15, 30), MAGMA)
+                        structures.ore(self, position, randrange(15, 30), MAGMA)
                     if randrange(10000) < 8:
-                        self.hell_star(position)
+                        print('hell star', position)
+                        structures.hell_star(self, position)
                 j2 = j + CHUNK_SIZE * chunk_position[1]
                 if j2 > DEPTH_STONE_LEVEL and self.chunks[chunk_position].blocks[i][j - 1].type == AIR:
                     if randrange(100) < 3:
-                        self.ore(position, randrange(5, 15), DENSE_DEPTH_STONE)
+                        structures.ore(self, position, randrange(5, 15), DENSE_DEPTH_STONE)
         self.chunks[chunk_position].loaded = True
 
         self.setblock((chunk_position[0] * settings.CHUNK_SIZE, chunk_position[1] * settings.CHUNK_SIZE), settings.NONE)
@@ -173,95 +168,3 @@ class World():
         if not self.chunks[chunk_pos].generated:
             self.generate(chunk_pos)
         return self.chunks[chunk_pos].blocks[x % CHUNK_SIZE][y % CHUNK_SIZE].type
-
-    def tree(self, position):
-        tree_height = random.randint(4, 6)
-        for j in range(position[1] - tree_height, position[1]):
-            self.setblock((position[0], j), LOG)
-
-        for i in range(position[0] - 2, position[0] + 3):
-            for j in range(position[1] - tree_height - 2, position[1] - tree_height + 2):
-                if self.getblock(i, j) != LOG:
-                    self.setblock((i, j), LEAVES)
-
-        self.setblock((position[0] - 2, position[1] - tree_height - 2), AIR)
-        self.setblock((position[0] + 2, position[1] - tree_height - 2), AIR)
-
-    def cave(self, position):
-        n = 400
-        l = [[False] * n for _ in range(n)]
-
-        p_now = v2(n // 2, n // 2)
-        d = 3
-        iteration = 75
-
-        # generation
-
-        for _ in range(iteration):
-            for x in range(max(0, int(p_now.x) - d), min(n - 1, int(p_now.x) + d + 1)):
-                for y in range(max(0, int(p_now.y) - d), min(n - 1, int(p_now.y) + d + 1)):
-                    l[x][y] = True
-            match randrange(4):
-                case 0:
-                    p_now.x += d
-                case 1:
-                    p_now.x -= d
-                case 2:
-                    p_now.y += 1.3 * d
-                case 3:
-                    p_now.y -= d
-
-        # smoothing corners
-        l2 = copy.deepcopy(l)
-
-        for i in range(1, len(l) - 1):
-            for j in range(1, len(l[i]) - 1):
-                t = l[i - 1][j] + l[i + 1][j] + l[i][j + 1] + l[i][j - 1]
-
-                if t == 2:
-                    l2[i][j] = False
-                elif t == 3:
-                    l2[i][j] = bool(randrange(2))
-
-        for i in range(n):
-            for j in range(n):
-                if l2[i][j]:
-                    self.setblock((position[0] + i - n // 2, position[1] + j - n // 2), AIR)
-
-    def ore(self, position: tuple, size: int, block_type, depth_block_verion=None):
-        pos = [0, 0]
-
-        s = {(pos[0], pos[1] + 1), (pos[0], pos[1] - 1), (pos[0] + 1, pos[1]), (pos[0] - 1, pos[1])}
-        s2 = set()
-
-        for i in range(size):
-            p = random.choice(list(s))
-            s.remove(p)
-            s2.add(p)
-
-            if self.getblock(position[0] + p[0], position[1] + p[1]) != AIR:
-                if depth_block_verion and position[1] > DEPTH_STONE_LEVEL:
-                    self.setblock((position[0] + p[0], position[1] + p[1]), depth_block_verion)
-                else:
-                    self.setblock((position[0] + p[0], position[1] + p[1]), block_type)
-
-            for j in [(p[0], p[1] + 1), (p[0], p[1] - 1), (p[0] + 1, p[1]), (p[0] - 1, p[1])]:
-                if j not in s2:
-                    s.add(j)
-
-    def hell_star(self, position):
-        l = [[0] * 20 for i in range(20)]
-
-        for x in range(-8, 9):
-            for y in range(-8, 9):
-                l[10 + x][10 + y] = int(randrange(1, 10) * (9 - dist((0, 0), (x, y))))
-
-        for x in range(20):
-            for y in range(20):
-                pos = (position[0] + x, position[1] + y)
-                if l[x][y] > 50:
-                    self.setblock(pos, RICH_HELL_STAR_ORE)
-                elif l[x][y] > 20:
-                    self.setblock(pos, HELL_STAR_ORE)
-                elif l[x][y] > 10:
-                    self.setblock(pos, POOR_HELL_STAR_ORE)

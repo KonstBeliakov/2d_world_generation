@@ -1,6 +1,21 @@
 import pygame
 from random import randrange
 
+
+def update():
+    global DRAW_DISTANSE_X, DRAW_DISTANSE_Y, BLOCK_SIZE, LOAD_DISTANSE, GENERATION_DISTANSE
+    DRAW_DISTANSE_X = (2 * 16 // BLOCK_SIZE) + 1
+    DRAW_DISTANSE_Y = (2 * 16 // BLOCK_SIZE) + 1
+    LOAD_DISTANSE = DRAW_DISTANSE_X + 2
+    GENERATION_DISTANSE = DRAW_DISTANSE_X + 4
+    for i in range(len(textures)):
+        if textures[i] is not None:
+            textures[i] = pygame.transform.scale(pygame.image.load(f'textures/{textures_files[i]}'),
+                                                          (BLOCK_SIZE, BLOCK_SIZE))
+            # settings.textures[i] = pygame.transform.scale(settings.textures[i], (settings.BLOCK_SIZE, settings.BLOCK_SIZE))
+    print(f'block size: {BLOCK_SIZE}')
+
+
 WORLD_SEED = randrange(10 ** 9)
 WORLD_FOLDER_NAME = f'world{WORLD_SEED}'
 
@@ -16,10 +31,10 @@ textures = [pygame.image.load(f'textures/{file}') if file else None for file in 
 # drawing settings
 
 BLOCK_SIZE = 16
-CHUNK_SIZE = 16
-LOAD_DISTANSE = 6
-GENERATION_DISTANSE = 9
-DRAW_DISTANSE_X = 3
+CHUNK_SIZE = 32
+LOAD_DISTANSE = 4
+GENERATION_DISTANSE = 6
+DRAW_DISTANSE_X = 2
 DRAW_DISTANSE_Y = 2
 SCREEN_SIZE = (1200, 800)
 SCREEN_SENTER = (SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
